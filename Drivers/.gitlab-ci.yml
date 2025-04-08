@@ -1,0 +1,38 @@
+stages:
+  - test
+  - report
+
+variables:
+  DOTNET_CLI_HOME: "/tmp/dotnetcli"
+  DOTNET_VERSION: "6.0" # Specify your required .NET version
+
+before_script:
+  - apt-get update -qq
+  - apt-get install -yqq curl unzip
+  - curl -sSL https://install.mono-project.com/repo/xamarin-archive.key | apt-key add -
+  - apt-get update -qq
+  - apt-get install -yqq mono-complete
+  - curl -sSL https://download.visualstudio.microsoft.com/download/pr/0838b5b8-1b6e-4290-82f7-9bc02484b86c/4e5d5e6d77b2ff0cf49cc9268a72d1f3/dotnet-sdk-6.0.100-linux-x64.tar.gz | tar -xz -C /usr/local/bin
+
+test:
+  stage: test
+  script:
+    - dotnet restore
+    - dotnet build
+    - dotnet test --logger:trx --results-directory ./TestResults
+  artifacts:
+    paths:
+      - TestResults/
+    expire_in: 1 week
+
+report:
+  stage: report
+  script:
+    - curl -sSL https://github.com/allure-framework/allure2/releases/download/2.14.0/allure-2.14.0.zip -o allure.zip
+    - unzip allure.zip -d /opt
+    - /opt/allure-2.14.0/bin/allure generate TestResults --output allure-report
+    - /opt/allure-2.14.0/bin/allure open allure-report
+  artifacts:
+    paths:
+      - allure-report/
+    expire_in: 1 week

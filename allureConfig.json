@@ -1,0 +1,8 @@
+{
+    "allure": {
+      "version": "2.18.1",
+      "reportDir": "bin/Debug/net9.0/allure-results"
+    }
+  }
+  
+  
